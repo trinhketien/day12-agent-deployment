@@ -1,0 +1,62 @@
+﻿==============================================
+  PRODUCTION API TEST RESULTS
+  URL: https://day12-agent-deployment-production-cdc1.up.railway.app
+  Date: 2026-04-17 18:03:12
+==============================================
+
+--- 1. GET /health ---
+{
+    "status":  "ok",
+    "version":  "1.0.0",
+    "environment":  "production",
+    "uptime_seconds":  627.7,
+    "total_requests":  10,
+    "llm_backend":  "mock",
+    "timestamp":  "2026-04-17T11:03:01.561475+00:00"
+}
+
+--- 2. GET /ready ---
+{
+    "ready":  true,
+    "timestamp":  "2026-04-17T11:03:01.992045+00:00"
+}
+
+--- 3. POST /ask (no key) -> 401 ---
+HTTP 401: {"detail":"API key required. Add header: X-API-Key: "}
+
+--- 4. POST /ask (with key) -> 200 ---
+{
+    "question":  "Docker la gi?",
+    "answer":  "Docker is a containerization platform that packages app + dependencies into a container. Build once, run anywhere! Containers are lighter than VMs and start much faster.",
+    "user_id":  "student1",
+    "model":  "mock",
+    "conversation_turn":  1,
+    "timestamp":  "2026-04-17T11:03:02.870605+00:00"
+}
+
+--- 5. GET /metrics ---
+{
+    "uptime_seconds":  629.4,
+    "total_requests":  14,
+    "error_count":  0,
+    "requests_per_second":  0.022,
+    "rate_limit":  {
+                       "user_id":  "user_2418b1b0",
+                       "requests_used":  1,
+                       "limit_per_minute":  10,
+                       "remaining":  9
+                   },
+    "budget":  {
+                   "user_id":  "user_2418b1b0",
+                   "spent_usd":  0.0,
+                   "limit_usd":  10.0,
+                   "remaining_usd":  10.0,
+                   "request_count":  2,
+                   "month":  "2026-04"
+               },
+    "timestamp":  "2026-04-17T11:03:03.321494+00:00"
+}
+
+==============================================
+  ALL TESTS PASSED
+==============================================
