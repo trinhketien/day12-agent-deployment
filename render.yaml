@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: day12-agent-deployment
+    runtime: docker
+    # Chỉ Render dùng Dockerfile ở root repo
+    dockerfilePath: ./Dockerfile
+    region: singapore
+    plan: starter
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: APP_NAME
+        value: Production AI Agent
+      - key: APP_VERSION
+        value: "1.0.0"
+      - key: AGENT_API_KEY
+        value: prod-vinuni-day12-2026
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "10"
+      - key: MONTHLY_BUDGET_USD
+        value: "10.0"
+      - key: DAILY_BUDGET_USD
+        value: "5.0"
+      - key: OPENAI_API_KEY
+        value: ""
