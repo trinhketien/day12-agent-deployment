@@ -1,8 +1,12 @@
 # Day 12 Lab — Mission Answers
 
+> **Student:** Trịnh Kế Tiến  
+> **Student ID:** 2A202600500  
 > **Course:** AICB-P1 · VinUniversity 2026  
 > **Lab:** Day 12 — Hạ Tầng Cloud & Deployment  
-> **Deadline:** 17/04/2026
+> **Deadline:** 17/04/2026  
+> **GitHub:** https://github.com/trinhketien/day12-agent-deployment  
+> **Production URL:** https://day12-agent-deployment-production-cdc1.up.railway.app
 
 ---
 

@@ -1,5 +1,8 @@
 # Deployment Information — Day 12 Lab
 
+> **Student:** Trịnh Kế Tiến  
+> **Student ID:** 2A202600500
+
 > **Platform:** Railway  
 > **Status:** 🟢 **LIVE** — Deployed and verified  
 > **Date:** 2026-04-17
