@@ -1,17 +1,18 @@
 # Deployment Information — Day 12 Lab
 
 > **Platform:** Railway  
-> **Status:** 🟡 Ready for deploy (configure API key then `railway up`)
+> **Status:** 🟢 **LIVE** — Deployed and verified  
+> **Date:** 2026-04-17
 
 ---
 
 ## Public URL
 
 ```
-https://day12-agent.up.railway.app
+https://day12-agent-deployment-production-cdc1.up.railway.app
 ```
 
-> ℹ️ URL sẽ được cập nhật sau khi deploy. Chạy `railway domain` để lấy URL thật.
+> ✅ Verified: Health, Auth, Rate Limit, Metrics — all passing.
 
 ---
 
@@ -29,19 +30,19 @@ Railway được chọn vì:
 
 ### 1. Health Check
 ```bash
-curl https://day12-agent.up.railway.app/health
+curl https://day12-agent-deployment-production-cdc1.up.railway.app/health
 # Expected: {"status":"ok","version":"1.0.0","environment":"production",...}
 ```
 
 ### 2. Readiness Check
 ```bash
-curl https://day12-agent.up.railway.app/ready
+curl https://day12-agent-deployment-production-cdc1.up.railway.app/ready
 # Expected: {"ready":true,"timestamp":"2026-04-17T..."}
 ```
 
 ### 3. Authentication Required (401)
 ```bash
-curl -X POST https://day12-agent.up.railway.app/ask \
+curl -X POST https://day12-agent-deployment-production-cdc1.up.railway.app/ask \
   -H "Content-Type: application/json" \
   -d '{"question": "Hello"}'
 # Expected: 401 {"detail":"API key required..."}
@@ -49,8 +50,8 @@ curl -X POST https://day12-agent.up.railway.app/ask \
 
 ### 4. Authenticated Request (200)
 ```bash
-curl -X POST https://day12-agent.up.railway.app/ask \
-  -H "X-API-Key: <YOUR_AGENT_API_KEY>" \
+curl -X POST https://day12-agent-deployment-production-cdc1.up.railway.app/ask \
+  -H "X-API-Key: prod-vinuni-day12-2026" \
   -H "Content-Type: application/json" \
   -d '{"question": "Explain Docker containers", "user_id": "student001"}'
 # Expected: {"question":"...","answer":"...","model":"mock-llm",...}
@@ -60,7 +61,7 @@ curl -X POST https://day12-agent.up.railway.app/ask \
 ```bash
 for i in $(seq 1 12); do
   STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-    -X POST https://day12-agent.up.railway.app/ask \
+    -X POST https://day12-agent-deployment-production-cdc1.up.railway.app/ask \
     -H "X-API-Key: <YOUR_AGENT_API_KEY>" \
     -H "Content-Type: application/json" \
     -d "{\"question\": \"Test $i\", \"user_id\": \"tester\"}")
@@ -71,7 +72,7 @@ done
 
 ### 6. Metrics (Protected)
 ```bash
-curl https://day12-agent.up.railway.app/metrics \
+curl https://day12-agent-deployment-production-cdc1.up.railway.app/metrics \
   -H "X-API-Key: <YOUR_AGENT_API_KEY>"
 # Expected: uptime, request count, rate limit status, budget status
 ```
