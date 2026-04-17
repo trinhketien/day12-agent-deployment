@@ -1,100 +1,106 @@
-# Lab 12 — Complete Production Agent
+# Production AI Agent — Day 12 VinUniversity Lab
 
-Kết hợp TẤT CẢ những gì đã học trong 1 project hoàn chỉnh.
+[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-green.svg)](https://fastapi.tiangolo.com)
+[![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://docker.com)
 
-## Checklist Deliverable
-
-- [x] Dockerfile (multi-stage, < 500 MB)
-- [x] docker-compose.yml (agent + redis)
-- [x] .dockerignore
-- [x] Health check endpoint (`GET /health`)
-- [x] Readiness endpoint (`GET /ready`)
-- [x] API Key authentication
-- [x] Rate limiting
-- [x] Cost guard
-- [x] Config từ environment variables
-- [x] Structured logging
-- [x] Graceful shutdown
-- [x] Public URL ready (Railway / Render config)
+Production-ready AI agent triển khai đầy đủ các concepts từ **Day 12: Hạ Tầng Cloud & Deployment**.
 
 ---
 
-## Cấu Trúc
+## 🏗️ Architecture
 
 ```
-06-lab-complete/
-├── app/
-│   ├── main.py         # Entry point — kết hợp tất cả
-│   ├── config.py       # 12-factor config
-│   ├── auth.py         # API Key + JWT
-│   ├── rate_limiter.py # Rate limiting
-│   └── cost_guard.py   # Budget protection
-├── Dockerfile          # Multi-stage, production-ready
-├── docker-compose.yml  # Full stack
-├── railway.toml        # Deploy Railway
-├── render.yaml         # Deploy Render
-├── .env.example        # Template
-├── .dockerignore
-└── requirements.txt
+                    Internet
+                        │
+                   [Nginx :80]           ← Load Balancer
+                        │
+         ┌──────────────┼──────────────┐
+         ▼              ▼              ▼
+  [Agent1 :8000]  [Agent2 :8000]  [Agent3 :8000]
+         └──────────────┴──────────────┘
+                        │
+                  [Redis :6379]          ← Shared State
 ```
 
 ---
 
-## Chạy Local
+## ✅ Features Implemented
+
+| Feature | File | Status |
+|---------|------|--------|
+| 12-Factor Config | `app/config.py` | ✅ |
+| API Key Auth | `app/auth.py` | ✅ |
+| Rate Limiting (10/min) | `app/rate_limiter.py` | ✅ |
+| Cost Guard ($10/month) | `app/cost_guard.py` | ✅ |
+| Health + Readiness | `app/main.py` | ✅ |
+| Graceful Shutdown | `app/main.py` | ✅ |
+| JSON Logging | `app/main.py` | ✅ |
+| Multi-stage Docker | `Dockerfile` | ✅ |
+| Nginx Load Balancer | `nginx/nginx.conf` | ✅ |
+| Full Stack Compose | `docker-compose.yml` | ✅ |
+
+---
+
+## 🚀 Quick Start
+
+### Option A: Python trực tiếp
 
 ```bash
-# 1. Setup
-cp .env.example .env
+pip install -r requirements.txt
+python -m app.main
 
-# 2. Chạy với Docker Compose
-docker compose up
+# Test
+curl http://localhost:8000/health
+curl -X POST http://localhost:8000/ask \
+  -H "X-API-Key: local-dev-key-12345" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Docker là gì?"}'
+```
 
-# 3. Test
-curl http://localhost/health
+### Option B: Docker single instance
 
-# 4. Lấy API key từ .env, test endpoint
-API_KEY=$(grep AGENT_API_KEY .env | cut -d= -f2)
-curl -H "X-API-Key: $API_KEY" \
-     -X POST http://localhost/ask \
-     -H "Content-Type: application/json" \
-     -d '{"question": "What is deployment?"}'
+```bash
+docker build -t day12-agent .
+docker run -p 8000:8000 -e AGENT_API_KEY=my-secret-key day12-agent
+```
+
+### Option C: Full Stack (Nginx + Redis + 3 instances)
+
+```bash
+cp .env.example .env.local   # edit AGENT_API_KEY
+docker compose up --scale agent=3
+curl http://localhost/health   # via Nginx port 80
 ```
 
 ---
 
-## Deploy Railway (< 5 phút)
+## 🔌 API
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/health` | No | Liveness probe |
+| GET | `/ready` | No | Readiness probe |
+| POST | `/ask` | X-API-Key | Ask the agent |
+| GET | `/metrics` | X-API-Key | Usage stats |
+
+---
+
+## ☁️ Deploy to Railway
 
 ```bash
-# Cài Railway CLI
-npm i -g @railway/cli
-
-# Login và deploy
-railway login
+npm i -g @railway/cli && railway login
 railway init
-railway variables set OPENAI_API_KEY=sk-...
-railway variables set AGENT_API_KEY=your-secret-key
-railway up
-
-# Nhận public URL!
-railway domain
+railway variables set AGENT_API_KEY=<your-secret>
+railway variables set ENVIRONMENT=production
+railway up && railway domain
 ```
 
 ---
 
-## Deploy Render
-
-1. Push repo lên GitHub
-2. Render Dashboard → New → Blueprint
-3. Connect repo → Render đọc `render.yaml`
-4. Set secrets: `OPENAI_API_KEY`, `AGENT_API_KEY`
-5. Deploy → Nhận URL!
-
----
-
-## Kiểm Tra Production Readiness
+## ✔️ Validation
 
 ```bash
 python check_production_ready.py
+# Expected: 21/21 checks passed (100%)
 ```
-
-Script này kiểm tra tất cả items trong checklist và báo cáo những gì còn thiếu.

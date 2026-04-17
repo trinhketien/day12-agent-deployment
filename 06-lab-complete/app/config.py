@@ -1,4 +1,7 @@
-"""Production config — 12-Factor: tất cả từ environment variables."""
+"""Production config — 12-Factor: ALL config from environment variables.
+
+No secrets in source code. Secrets must come from env or .env.local file.
+"""
 import os
 import logging
 from dataclasses import dataclass, field
@@ -6,50 +9,90 @@ from dataclasses import dataclass, field
 
 @dataclass
 class Settings:
-    # Server
-    host: str = field(default_factory=lambda: os.getenv("HOST", "0.0.0.0"))
-    port: int = field(default_factory=lambda: int(os.getenv("PORT", "8000")))
-    environment: str = field(default_factory=lambda: os.getenv("ENVIRONMENT", "development"))
-    debug: bool = field(default_factory=lambda: os.getenv("DEBUG", "false").lower() == "true")
+    # ── Server ───────────────────────────────────────────────
+    host: str = field(
+        default_factory=lambda: os.getenv("HOST", "0.0.0.0")
+    )
+    port: int = field(
+        default_factory=lambda: int(os.getenv("PORT", "8000"))
+    )
+    environment: str = field(
+        default_factory=lambda: os.getenv("ENVIRONMENT", "development")
+    )
+    debug: bool = field(
+        default_factory=lambda: os.getenv("DEBUG", "false").lower() == "true"
+    )
 
-    # App
-    app_name: str = field(default_factory=lambda: os.getenv("APP_NAME", "Production AI Agent"))
-    app_version: str = field(default_factory=lambda: os.getenv("APP_VERSION", "1.0.0"))
+    # ── App ──────────────────────────────────────────────────
+    app_name: str = field(
+        default_factory=lambda: os.getenv("APP_NAME", "Production AI Agent")
+    )
+    app_version: str = field(
+        default_factory=lambda: os.getenv("APP_VERSION", "1.0.0")
+    )
 
-    # LLM
-    openai_api_key: str = field(default_factory=lambda: os.getenv("OPENAI_API_KEY", ""))
-    llm_model: str = field(default_factory=lambda: os.getenv("LLM_MODEL", "gpt-4o-mini"))
+    # ── LLM ──────────────────────────────────────────────────
+    openai_api_key: str = field(
+        default_factory=lambda: os.getenv("OPENAI_API_KEY", "")
+    )
+    llm_model: str = field(
+        default_factory=lambda: os.getenv("LLM_MODEL", "gpt-4o-mini")
+    )
 
-    # Security
-    agent_api_key: str = field(default_factory=lambda: os.getenv("AGENT_API_KEY", "dev-key-change-me"))
-    jwt_secret: str = field(default_factory=lambda: os.getenv("JWT_SECRET", "dev-jwt-secret"))
+    # ── Security ─────────────────────────────────────────────
+    agent_api_key: str = field(
+        default_factory=lambda: os.getenv("AGENT_API_KEY", "dev-key-change-me-in-production")
+    )
+    jwt_secret: str = field(
+        default_factory=lambda: os.getenv("JWT_SECRET", "dev-jwt-secret-change-in-production")
+    )
     allowed_origins: list = field(
         default_factory=lambda: os.getenv("ALLOWED_ORIGINS", "*").split(",")
     )
 
-    # Rate limiting
+    # ── Rate Limiting ─────────────────────────────────────────
     rate_limit_per_minute: int = field(
-        default_factory=lambda: int(os.getenv("RATE_LIMIT_PER_MINUTE", "20"))
+        default_factory=lambda: int(os.getenv("RATE_LIMIT_PER_MINUTE", "10"))
     )
 
-    # Budget
+    # ── Budget ────────────────────────────────────────────────
+    monthly_budget_usd: float = field(
+        default_factory=lambda: float(os.getenv("MONTHLY_BUDGET_USD", "10.0"))
+    )
+    # Keep for backwards compatibility with existing main.py
     daily_budget_usd: float = field(
         default_factory=lambda: float(os.getenv("DAILY_BUDGET_USD", "5.0"))
     )
 
-    # Storage
-    redis_url: str = field(default_factory=lambda: os.getenv("REDIS_URL", ""))
+    # ── Storage ──────────────────────────────────────────────
+    redis_url: str = field(
+        default_factory=lambda: os.getenv("REDIS_URL", "")
+    )
 
-    def validate(self):
+    def validate(self) -> "Settings":
         logger = logging.getLogger(__name__)
         if self.environment == "production":
-            if self.agent_api_key == "dev-key-change-me":
-                raise ValueError("AGENT_API_KEY must be set in production!")
-            if self.jwt_secret == "dev-jwt-secret":
-                raise ValueError("JWT_SECRET must be set in production!")
+            if self.agent_api_key == "dev-key-change-me-in-production":
+                raise ValueError("AGENT_API_KEY must be overridden in production!")
+            if self.jwt_secret == "dev-jwt-secret-change-in-production":
+                raise ValueError("JWT_SECRET must be overridden in production!")
         if not self.openai_api_key:
             logger.warning("OPENAI_API_KEY not set — using mock LLM")
         return self
 
 
+# Load .env.local or .env for local development
+def _load_dotenv():
+    for env_file in [".env.local", ".env"]:
+        if os.path.exists(env_file):
+            with open(env_file) as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        key, _, value = line.partition("=")
+                        os.environ.setdefault(key.strip(), value.strip())
+            break
+
+
+_load_dotenv()
 settings = Settings().validate()
