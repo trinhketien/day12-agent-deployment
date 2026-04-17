@@ -1,9 +1,9 @@
 # ============================================================
-# Root Dockerfile — cho Railway deploy từ root repo
-# Trỏ vào subfolder 06-lab-complete/
+# Production Dockerfile — Multi-stage, <500MB, non-root user
+# Build context: repo root (app/ và utils/ ở cùng cấp)
 # ============================================================
 
-# Stage 1: Builder
+# Stage 1: Builder — cài packages
 FROM python:3.11-slim AS builder
 
 WORKDIR /build
@@ -11,24 +11,22 @@ WORKDIR /build
 RUN apt-get update && apt-get install -y gcc libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-COPY 06-lab-complete/requirements.txt .
+COPY requirements.txt .
 RUN pip install --no-cache-dir --user -r requirements.txt
 
 
-# Stage 2: Runtime
+# Stage 2: Runtime — image nhỏ, non-root
 FROM python:3.11-slim AS runtime
 
-# Non-root user
 RUN groupadd -r agent && useradd -r -g agent -d /app agent
 
 WORKDIR /app
 
-# Copy packages từ builder
 COPY --from=builder /root/.local /home/agent/.local
 
-# Copy application từ subfolder
-COPY 06-lab-complete/app/ ./app/
-COPY 06-lab-complete/utils/ ./utils/
+# Copy source code
+COPY app/ ./app/
+COPY utils/ ./utils/
 
 RUN chown -R agent:agent /app
 
