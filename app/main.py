@@ -376,7 +376,12 @@ def _sigterm_handler(signum, frame):
     }))
 
 
-signal.signal(signal.SIGTERM, _sigterm_handler)
+try:
+    signal.signal(signal.SIGTERM, _sigterm_handler)
+except (ValueError, OSError):
+    # signal.signal chỉ chạy được ở main thread
+    # Trong multi-worker mode, child processes bỏ qua bước này
+    pass
 
 
 # ─────────────────────────────────────────────────────────────

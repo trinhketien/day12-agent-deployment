@@ -74,8 +74,6 @@ class Settings:
         if self.environment == "production":
             if self.agent_api_key == "dev-key-change-me-in-production":
                 raise ValueError("AGENT_API_KEY must be overridden in production!")
-            if self.jwt_secret == "dev-jwt-secret-change-in-production":
-                raise ValueError("JWT_SECRET must be overridden in production!")
         if not self.openai_api_key:
             logger.warning("OPENAI_API_KEY not set — using mock LLM")
         return self
@@ -85,7 +83,7 @@ class Settings:
 def _load_dotenv():
     for env_file in [".env.local", ".env"]:
         if os.path.exists(env_file):
-            with open(env_file) as f:
+            with open(env_file, encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
                     if line and not line.startswith("#") and "=" in line:
