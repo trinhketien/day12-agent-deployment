@@ -36,8 +36,8 @@ from app.auth import verify_api_key
 from app.rate_limiter import check_rate_limit, get_rate_limit_status
 from app.cost_guard import check_budget, record_cost, get_budget_status
 
-# Mock LLM — replace with OpenAI when OPENAI_API_KEY is set
-from utils.mock_llm import ask as llm_ask
+# LLM Backend — Gemini (if GEMINI_API_KEY set) or Mock
+from utils.mock_llm import ask as llm_ask, get_backend as llm_backend
 
 # ─────────────────────────────────────────────────────────────
 # Logging — JSON Structured (12-Factor III)
@@ -292,7 +292,7 @@ async def ask_agent(
         question=body.question,
         answer=answer,
         user_id=body.user_id,
-        model=settings.llm_model if settings.openai_api_key else "mock-llm",
+        model=llm_backend(),
         conversation_turn=turn,
         timestamp=datetime.now(timezone.utc).isoformat(),
     )
@@ -315,7 +315,7 @@ def health():
         environment=settings.environment,
         uptime_seconds=round(time.time() - START_TIME, 1),
         total_requests=_request_count,
-        llm_backend="openai" if settings.openai_api_key else "mock",
+        llm_backend=llm_backend(),
         timestamp=datetime.now(timezone.utc).isoformat(),
     )
 
